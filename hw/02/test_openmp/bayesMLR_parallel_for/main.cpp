@@ -1,3 +1,6 @@
+// http://bisqwit.iki.fi/story/howto/openmp/
+// https://computing.llnl.gov/tutorials/openMP/#CFormat
+// http://luiarthur.github.io/assets/ams250/notes/notes5.pdf
 #include <iostream>
 #include <armadillo>
 #include <omp.h>
@@ -61,7 +64,6 @@ vec bayesMLR() {
   //metropolis ratio:
   double q;
 
-  z.load("dat.txt");
   n = z.n_rows;
   k = z.n_cols-1;
 
@@ -116,13 +118,14 @@ vec bayesMLR() {
 
 
 int main() {
+  z.load("dat.txt");
   time_t start,stop;
   struct timeval tv;
   gettimeofday(&tv, NULL);
   start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
 
   int tid;
-  int th = 8;
+  int th = 1;
   omp_set_num_threads(th);
   openblas_set_num_threads(1);
   mat out = zeros<mat>(10,th);
