@@ -18,44 +18,50 @@ mat mvrnorm(mat M, mat S) {
 
 
 int main(int argc, char** argv) {
-  // timer //////////////////
-  time_t start,stop;       //
-  struct timeval tv;       //
-  gettimeofday(&tv, NULL); //
-  ///////////////////////////
+  if (argc <= 2) {
+    cout << "Enter arguments: num_threads_open_blas num_threads_omp" << endl;
+  } else {
 
-  // set number of threads ////////////////////////
-  int num_threads_openblas = atoi(argv[1]);      //
-  int num_threads_openmp = atoi(argv[2]);        //
-  openblas_set_num_threads(num_threads_openblas);//
-  omp_set_num_threads(num_threads_openmp);       //
-  /////////////////////////////////////////////////
+    // timer //////////////////
+    time_t start,stop;       //
+    struct timeval tv;       //
+    gettimeofday(&tv, NULL); //
+    ///////////////////////////
 
-  int j;
-  int J = 1000;
-  int n = 1000;
-  vec m = linspace(0,n-1,n);
-  mat S = eye(n,n);
-  mat out = zeros<mat>(n,J);
+    // set number of threads ////////////////////////
+    int num_threads_openblas = atoi(argv[1]);      //
+    int num_threads_omp = atoi(argv[2]);        //
+    openblas_set_num_threads(num_threads_openblas);//
+    omp_set_num_threads(num_threads_omp);       //
+    /////////////////////////////////////////////////
 
-  start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
+    int j;
+    int J = 1000;
+    int n = 1000;
+    vec m = linspace(0,n-1,n);
+    mat S = eye(n,n);
+    mat out = zeros<mat>(n,J);
 
-  // allow all threads to use "out"
-  // "j" is only used inside the loop. not shared
-  #pragma omp parallel shared(out) private(j)
-  {
-    #pragma omp for 
-    for (j=0; j<J; j++) {
-      out.col(j) = mvrnorm(m,S);
+    start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
+
+    // allow all threads to use "out"
+    // "j" is only used inside the loop. not shared
+    #pragma omp parallel shared(out) private(j)
+    {
+      #pragma omp for 
+      for (j=0; j<J; j++) {
+        out.col(j) = mvrnorm(m,S);
+      }
     }
+
+    cout << mean(out,1);
+
+    // timer //////////////////////////////////////////////////////
+    gettimeofday(&tv, NULL);                                     //
+    stop = (tv.tv_sec) * 1000 + (tv.tv_usec)/1000;               //
+    cout << endl << (stop - start) / 1000.0 << "seconds" << endl;//
+    ///////////////////////////////////////////////////////////////
   }
 
-  cout << mean(out,1);
-
-  // timer //////////////////////////////////////////////////////
-  gettimeofday(&tv, NULL);                                     //
-  stop = (tv.tv_sec) * 1000 + (tv.tv_usec)/1000;               //
-  cout << endl << (stop - start) / 1000.0 << "seconds" << endl;//
-  ///////////////////////////////////////////////////////////////
   return 0;
 }
