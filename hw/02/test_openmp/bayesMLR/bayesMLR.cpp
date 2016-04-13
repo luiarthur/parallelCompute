@@ -87,11 +87,12 @@ int main(int argc, char** argv) {
   gettimeofday(&tv, NULL);
   start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
 
-//  int tid;
-//#pragma omp parallel private(tid)
-//{
-//  tid = omp_get_thread_num();
-//  cout << tid << endl;
+  int tid;
+  omp_set_num_threads(1);
+#pragma omp parallel private(tid)
+{
+  tid = omp_get_thread_num();
+  cout << tid << endl;
   for (int i=1; i<B; i++) {
     // Set Initial Values:
     bb.row(i) = bb.row(i-1);
@@ -119,7 +120,7 @@ int main(int argc, char** argv) {
     
     cout << "\r" << i*100/B <<"%";
   }
-//}
+}
 
   gettimeofday(&tv, NULL);
   stop = (tv.tv_sec) * 1000 + (tv.tv_usec)/1000;
