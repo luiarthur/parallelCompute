@@ -40,6 +40,8 @@ int main(int argc, char** argv) {
 
   start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
 
+  // allow all threads to use "out"
+  // "j" is only used inside the loop. not shared
   #pragma omp parallel shared(out) private(j)
   {
     #pragma omp for 
