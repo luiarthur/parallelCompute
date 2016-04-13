@@ -11,7 +11,7 @@ int n,k;  // nrow(X),ncol(X)
 mat z,X,y,XXi,Xt;
 const double a=1;
 const double b=1;
-const int B=pow(10,5);
+const int B=2*pow(10,5);
 const double s2 = 10;
 
 double ll(mat be, double sig2) {
@@ -39,7 +39,7 @@ mat mvrnorm(mat M, mat S) {
 // mvrnorm <- function(M,S,n=nrow(S)) M + t(chol(S)) %*% rnorm(n)
 
 
-int main(int argc, char** argv) {
+vec bayesMLR() {
   mat mle;
 
   //posteriors:
@@ -81,20 +81,8 @@ int main(int argc, char** argv) {
   mat bc = bb.row(0);
   double sc = 1.0;
 
-  cout << "Starting Metropolis:" <<endl;
+  //cout << "Starting Metropolis:" <<endl;
 
-  time_t start,stop;
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
-
-  int tid;
-  omp_set_num_threads(1);
-  openblas_set_num_threads(1);
-#pragma omp parallel private(tid)
-{
-  tid = omp_get_thread_num();
-  cout << tid << endl;
   for (int i=1; i<B; i++) {
     // Set Initial Values:
     bb.row(i) = bb.row(i-1);
@@ -120,23 +108,38 @@ int main(int argc, char** argv) {
       }
     }
     
-    if (i % (B/10) == 0 || i == 1) fprintf(stderr,"\r%d%s",i*100/B,"%");
+    //if (i % (B/10) == 0 || i == 1) fprintf(stderr,"\r%d%s",i*100/B,"%");
   }
+
+  return mean(bb.rows(90000,100000-1)).t();
 }
 
+
+int main() {
+  time_t start,stop;
+  struct timeval tv;
+  gettimeofday(&tv, NULL);
+  start = (tv.tv_sec)*1000 + (tv.tv_usec)/1000;
+
+  int tid;
+  int th = 8;
+  omp_set_num_threads(th);
+  openblas_set_num_threads(1);
+  mat out = zeros<mat>(10,th);
+
+  cout << "COMPUTING..." << endl;
+  #pragma omp parallel private(tid)
+  {
+    tid = omp_get_thread_num();
+    cout << tid << " ";
+
+    out.col(tid) = bayesMLR();
+  }
+
+  cout << endl << out ;
   gettimeofday(&tv, NULL);
   stop = (tv.tv_sec) * 1000 + (tv.tv_usec)/1000;
-
-  cout << "Posterior Means Beta: \n" << 
-          mean(bb.rows(90000,100000-1)).t()<<endl;
-  cout << "Posterior Mean Sigma2: \n" <<
-          mean(ss.rows(90000,100000-1))<<endl;
-  cout << "Beta Acceptance:   "<< 100*accb/B <<"%"<<endl;
-  cout << "Sigma2 Acceptance: "<< 100*accs/B <<"%"<<endl;
-  cout <<endl;
-
   cout << (stop - start) / 1000.0 << "seconds" << endl;
-  //ss.save("s2.txt",raw_ascii);
 
   return 0;
 }

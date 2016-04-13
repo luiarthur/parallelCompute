@@ -1,7 +1,7 @@
 #include <iostream>
 #include <armadillo>
-#include <omp.h>
-#include <cblas.h>
+#include <omp.h> // omp_blablabla() functions
+#include <cblas.h> // openblas_blablabla() functions. Need -I $OPENBLAS_INCLUDE
 
 using namespace std;
 using namespace arma;
@@ -11,7 +11,7 @@ int main(int argc, char** argv)
   int tid;
   time_t start, stop;
   struct timeval tv;
-  int n = 1000;
+  int n = 2000;
   mat I = eye(n,n);
   vec d = zeros<vec>(8);
 
