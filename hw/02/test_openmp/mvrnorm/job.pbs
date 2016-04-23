@@ -1,0 +1,35 @@
+#!/bin/bash
+
+#PBS -N my_first_cluster_job
+#PBS -q normal
+#PBS -l nodes=1:ppn=16
+#PBS -l walltime=00:10:00
+#PBS -M alui2@ucsc.edu
+#PBS -m abe
+
+cd $PBS_O_WORKDIR
+echo $PWD
+export ARMA_HOME=~/Libs/armadillo/usr/include
+export OPENBLAS_HOME=~/Libs/openblas/lib    
+export OPENBLAS_INCLUDE=~/Libs/openblas/include
+export LD_LIBRARY_PATH=$OPENBLAS_HOME:$LD_LIBRARY_PATH  # dynamic link
+
+module load lapack/s_gcc_netlib_3.5.0    # load lapack
+module load gcc/4.9.2                    # load gcc
+
+g++ *.cpp -o a.o -O2 -I $ARMA_HOME -DARMA_DONT_USE_WRAPPER -I $OPENBLAS_INCLUDE -L$OPENBLAS_HOME -lopenblas -llapack -lgfortran -Wall -fopenmp
+time ./a.o 1 16 > log.file
+
+
+
+
+##########################################################
+# EXAMPLE SCRIPT for submitting jobs on cluster. 
+# This was wrtten for hyades.ucsc.edu
+# run this file on a cluster in the current directory by
+#   $ qsub job.pbs
+#
+#
+# This script isn't used if running job locally.
+# Just use the compile script instead.
+##########################################################
