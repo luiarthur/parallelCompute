@@ -1,0 +1,3 @@
+#!/bin/bash
+
+rm -f {a.out,log.file,my_first_cluster_mpi.*}

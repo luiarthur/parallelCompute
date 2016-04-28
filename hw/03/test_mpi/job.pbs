@@ -1,0 +1,23 @@
+#!/bin/bash
+
+#PBS -N my_first_cluster_mpi
+#PBS -q normal
+#PBS -l nodes=2:ppn=2
+#PBS -l walltime=00:10:00
+#PBS -M alui2@ucsc.edu
+#PBS -m abe
+
+cd $PBS_O_WORKDIR
+echo $PWD
+
+module load gcc/4.9.2
+module load intel_mpi/4.1.3
+mpicxx hello.cpp
+#time mpirun -n 2 ./a.out > log.file
+time mpirun -genv I_MPI_FABRICS shm:ofa -n 2 ./a.out > log.file
+
+
+# Example script for submitting jobs on cluster. 
+# This was wrtten for hyades.ucsc.edu
+# run this file by
+# $ qsub job.pbs
